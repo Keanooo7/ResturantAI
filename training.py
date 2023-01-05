@@ -1,13 +1,16 @@
 import numpy as np
 import random
-import json
+from random import random, randint
 
+import json
+import mlflow.pytorch
+from mlflow import log_metric, log_param, log_artifacts
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-
 from utils import bag_of_words, tokenize, stem
 from model import NeuralNet
+
 
 with open('intents.json', 'r') as f:
     intents = json.load(f)
@@ -88,6 +91,8 @@ model = NeuralNet(input_size, hidden_size, output_size).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
+
+mlflow.pytorch.autolog()
 # Train the model
 for epoch in range(num_epochs):
     for (words, labels) in train_loader:
@@ -106,10 +111,15 @@ for epoch in range(num_epochs):
         optimizer.step()
         
     if (epoch+1) % 100 == 0:
+        
         print (f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
-
-
+        
 print(f'final loss: {loss.item():.4f}')
+
+#mlflow metric logging:
+
+
+
 
 data = {
 "model_state": model.state_dict(),
